@@ -19,13 +19,14 @@ namespace JayFos.Roads
         private float widthNoiseScale;
         private int worldSeed;
         private float roadNoiseScale;
+        private int allocatedResolution;
 
         private const float GRADIENT_EPSILON = 0.5f;
 
         public int GridResolution => gridResolution;
         public float GridSpacing => gridSpacing;
 
-        public void Compute(Vector2Int chunkCoord, RoadSettings settings, int seed)
+        public void Compute(Vector2Int chunkCoord, RoadSettings settings, int seed, int chunkSize)
         {
             if (settings == null || !settings.enableRoads)
                 return;
@@ -42,17 +43,16 @@ namespace JayFos.Roads
             gridSpacing = settings.gridResolution;
             gridBorderCells = settings.gridBorderCells;
 
-            int chunkSize = 64; // Will be passed or read from settings
             gridResolution = Mathf.CeilToInt(chunkSize / gridSpacing) + 1 + 2 * gridBorderCells;
 
             worldOrigin = new Vector2(
                 chunkCoord.x * chunkSize - gridBorderCells * gridSpacing,
                 chunkCoord.y * chunkSize - gridBorderCells * gridSpacing);
 
-            int totalCells = gridResolution * gridResolution;
-            if (influence == null || influence.Length != totalCells)
+            if (influence == null || gridResolution > allocatedResolution)
             {
                 influence = new float[gridResolution, gridResolution];
+                allocatedResolution = gridResolution;
             }
 
             for (int gz = 0; gz < gridResolution; gz++)
@@ -62,7 +62,7 @@ namespace JayFos.Roads
                     float worldX = worldOrigin.x + gx * gridSpacing;
                     float worldZ = worldOrigin.y + gz * gridSpacing;
 
-                    float roadNoise = SampleNoise(worldX, worldZ);
+                    float roadNoise = SampleNoise(worldX, worldZ, roadNoiseScale);
                     float roadPresence = ComputeRoadPresence(roadNoise);
                     float ridgeSignal = ComputeRidgeSignal(worldX, worldZ, roadNoise);
                     float centerlinePresence = Mathf.Clamp01(ridgeSignal / ridgeThreshold);
@@ -107,18 +107,18 @@ namespace JayFos.Roads
 
         public float GetRoadWidth(float worldX, float worldZ)
         {
-            float widthNoise = SampleNoise(worldX + 1000f, worldZ + 1000f);
+            float widthNoise = SampleNoise(worldX + 1000f, worldZ + 1000f, widthNoiseScale);
             float roadInfluence = Sample(worldX, worldZ);
             return Mathf.Lerp(minRoadWidth, maxRoadWidth, widthNoise) * roadInfluence;
         }
 
-        private float SampleNoise(float worldX, float worldZ)
+        private float SampleNoise(float worldX, float worldZ, float noiseScale)
         {
-            float seededX = worldX + (float)worldSeed * 0.1f;
-            float seededZ = worldZ + (float)worldSeed * 0.17f;
+            float seededX = NoiseGenerator.ComputeSeedOffset(worldX, worldSeed);
+            float seededZ = NoiseGenerator.ComputeSeedOffset(worldZ, worldSeed);
 
-            float sampleX = seededX * roadNoiseScale;
-            float sampleZ = seededZ * roadNoiseScale;
+            float sampleX = seededX * noiseScale;
+            float sampleZ = seededZ * noiseScale;
 
             return Mathf.PerlinNoise(sampleX, sampleZ) * 2f - 1f;
         }
@@ -130,10 +130,10 @@ namespace JayFos.Roads
 
         private float ComputeRidgeSignal(float worldX, float worldZ, float roadNoise)
         {
-            float dx = SampleNoise(worldX + GRADIENT_EPSILON, worldZ) -
-                       SampleNoise(worldX - GRADIENT_EPSILON, worldZ);
-            float dz = SampleNoise(worldX, worldZ + GRADIENT_EPSILON) -
-                       SampleNoise(worldX, worldZ - GRADIENT_EPSILON);
+            float dx = SampleNoise(worldX + GRADIENT_EPSILON, worldZ, roadNoiseScale) -
+                       SampleNoise(worldX - GRADIENT_EPSILON, worldZ, roadNoiseScale);
+            float dz = SampleNoise(worldX, worldZ + GRADIENT_EPSILON, roadNoiseScale) -
+                       SampleNoise(worldX, worldZ - GRADIENT_EPSILON, roadNoiseScale);
 
             float perpX = -dz;
             float perpZ = dx;
@@ -146,8 +146,8 @@ namespace JayFos.Roads
             perpZ /= perpLen;
 
             float sampleDist = ridgeSampleDistance;
-            float leftNoise = SampleNoise(worldX + perpX * sampleDist, worldZ + perpZ * sampleDist);
-            float rightNoise = SampleNoise(worldX - perpX * sampleDist, worldZ - perpZ * sampleDist);
+            float leftNoise = SampleNoise(worldX + perpX * sampleDist, worldZ + perpZ * sampleDist, roadNoiseScale);
+            float rightNoise = SampleNoise(worldX - perpX * sampleDist, worldZ - perpZ * sampleDist, roadNoiseScale);
 
             return Mathf.Max(0f, roadNoise - Mathf.Max(leftNoise, rightNoise));
         }
