@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using JayFos.World;
+using JayFos.Roads;
 
 namespace JayFos.Terrain
 {
@@ -41,6 +42,8 @@ namespace JayFos.Terrain
         private JayFos.Biomes.BiomeMap biomeMap;
 
         private Mesh currentMesh;
+
+        private RoadFieldGrid currentRoadGrid;
 
         private readonly List<JayFos.Foliage.FoliageGenerator.PlacementPoint> _scratchPlacementPoints =
             new List<JayFos.Foliage.FoliageGenerator.PlacementPoint>();
@@ -214,6 +217,14 @@ namespace JayFos.Terrain
                 if (heightMap == null)
                     return;
 
+                RoadFieldGrid roadGrid = null;
+                if (settings.enableRoads && settings.roadSettings != null)
+                {
+                    roadGrid = RoadFieldGridPool.Get();
+                    roadGrid.Compute(coord, settings.roadSettings, settings.seed, settings.chunkSize);
+                    currentRoadGrid = roadGrid;
+                }
+
                 try
                 {
                     JayFos.Biomes.BiomeDefinition chunkBiome = null;
@@ -223,7 +234,7 @@ namespace JayFos.Terrain
                         chunkBiome = biomeMap.GetBiomeAtChunkCenter(coord.x, coord.y, settings.chunkSize);
                     }
 
-                    Mesh mesh = MeshGenerator.Generate(heightMap, settings, chunkBiome);
+                    Mesh mesh = MeshGenerator.Generate(heightMap, settings, chunkBiome, roadGrid);
                     AssignMesh(mesh);
 
                     if (meshRenderer != null)
@@ -233,11 +244,16 @@ namespace JayFos.Terrain
 
                     using (var foliageScope = TerrainProfiler.ScopedFoliage())
                     {
-                        GenerateFoliage(coord, heightMap, settings);
+                        GenerateFoliage(coord, heightMap, settings, roadGrid);
                     }
                 }
                 finally
                 {
+                    if (currentRoadGrid != null)
+                    {
+                        RoadFieldGridPool.Return(currentRoadGrid);
+                        currentRoadGrid = null;
+                    }
                     HeightMapPool.Return(heightMap);
                 }
             }
@@ -338,14 +354,15 @@ namespace JayFos.Terrain
         private void GenerateFoliage(
             Vector2Int coord,
             HeightMap heightMap,
-            JayFos.World.WorldSettings settings)
+            JayFos.World.WorldSettings settings,
+            RoadFieldGrid roadGrid)
         {
             if (foliageGenerator == null || heightMap == null || settings == null)
                 return;
 
             _scratchPlacementPoints.Clear();
 
-            var placementPoints = foliageGenerator.Generate(coord, heightMap, _scratchPlacementPoints);
+            var placementPoints = foliageGenerator.Generate(coord, heightMap, _scratchPlacementPoints, roadGrid);
             if (placementPoints == null)
                 return;
 
