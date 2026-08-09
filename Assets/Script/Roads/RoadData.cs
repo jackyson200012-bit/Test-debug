@@ -4,6 +4,24 @@ using UnityEngine;
 namespace JayFos.Roads
 {
     [System.Serializable]
+    public struct NavigationWaypoint
+    {
+        public Vector3 Position;
+        public Vector3 Direction;
+        public float Width;
+        public float Influence;
+        public NavigationWaypointType WaypointType;
+    }
+
+    public enum NavigationWaypointType
+    {
+        Road,
+        Intersection,
+        Start,
+        End
+    }
+
+    [System.Serializable]
     public class RoadSegment
     {
         public Vector3 start;
@@ -97,6 +115,35 @@ namespace JayFos.Roads
         {
             segments.Clear();
             waypoints.Clear();
+        }
+
+        public List<NavigationWaypoint> ExtractNavigationData(RoadFieldGrid roadGrid, Vector3 worldPosition)
+        {
+            // Find nearest road segment
+            RoadSegment nearest = roadGrid.FindNearestSegment(worldPosition);
+
+            if (nearest == null)
+                return new List<NavigationWaypoint>();
+
+            // Get road center and width
+            Vector3 roadCenter = nearest.start + (nearest.end - nearest.start) * 0.5f;
+            float roadWidth = nearest.width;
+
+            // Get navigation data
+            Vector3 direction = nearest.end - nearest.start;
+            Vector3 roadNormal = Vector3.Perpendicular(direction);
+
+            return new List<NavigationWaypoint>
+            {
+                new NavigationWaypoint
+                {
+                    Position = roadCenter,
+                    Direction = direction.normalized,
+                    Width = roadWidth,
+                    Influence = nearest.influence,
+                    WaypointType = NavigationWaypointType.Road
+                }
+            };
         }
     }
 }
