@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f62f11616ee43b244bf1eb49a85384a4, type: 3}
+  m_Name: WorldSettings
+  m_EditorClassIdentifier: Assembly-CSharp::WorldSettings
+  seed: 12345
+  enableBiomeSystem: 1
+  biomes: []
+  defaultBiome: {fileID: 0}
+  biomeNoiseScale: 0.02
+  biomeDetailNoiseScale: 0.05
+  chunkSize: 64
+  terrainMaterial: {fileID: 2100000, guid: 1a553e645e9fd484eb159f62e559913c, type: 2}
+  verticesPerLine: 65
+  noiseScale: 0.03
+  heightMultiplier: 15
+  octaves: 4
+  persistence: 0.01
+  lacunarity: 2
+  noiseOffset: {x: 0, y: 0}
+  viewDistance: 5
+  generateCollision: 1
+  groundLayer: {fileID: 8574412962073106934, guid: f7ce30ec9b280b34cacb1a1005349890, type: 2}
+  grass01: {fileID: 5153741093904279990, guid: ef8374d642969b14baa54045236c5fb0, type: 3}
+  grass02: {fileID: 3036827482424969206, guid: 3ade7fcf53c8246418eb3c493d6d2178, type: 3}
+  grassChance: 50
+  terrainHeightThreshold: 0
+  fruitTree: {fileID: 919132149155446097, guid: f222748f1796b2e49a56a2fbf7563247, type: 3}
+  treesPerChunk: 200
+  foliageDensityMultiplier: 1.5
+  spawnThreshold: 0.35
+  hashOffset: 12345.789
+  hashMultiplier: 1
+  waterLevel: -5
+  waterMaterial: {fileID: 2100000, guid: 6e0f15a801fbf3b419094c3d2dc9fcbb, type: 2}
+  waterWaveStrength: 0.06
+  waterWaveSpeed: 0.8
+  waterWaveFrequency: 1.2
+  waterDepthMax: 10
+  waterFoamDistance: 2.5
+  cloudSettings: {fileID: 11400000, guid: ffbd11c9b25843a4a8cf1ad5087ed8db, type: 2}
+  weatherSettings: {fileID: 11400000, guid: 0743136ab3ab8164eb5b85e3bbafdc74, type: 2}
+  enableClouds: 1
+  spawnRules: []

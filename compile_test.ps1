@@ -1,0 +1,14 @@
+$cscPath = "C:\Program Files\Unity\Hub\Editor\6000.0.37f1\Editor\Data\MonoBleedingEdge\bin\csc.exe"
+
+& $cscPath `
+  /nologo `
+  /noconfig `
+  /target:library `
+  /out:"c:\Test debug\Test debug\temp.dll" `
+  "c:\Test debug\Test debug\Assets\Script\HeightMap.cs" `
+  "c:\Test debug\Test debug\Assets\Script\FoliageData.cs" `
+  "c:\Test debug\Test debug\Assets\Script\WorldSettings.cs" `
+  "c:\Test debug\Test debug\Assets\Script\ChunkManager.cs" `
+  "c:\Test debug\Test debug\Assets\Script\FoliagePool.cs" `
+  "c:\Test debug\Test debug\Assets\Script\Chunk.cs" `
+  /reference:"C:\Program Files\Unity\Hub\Editor\6000.0.37f1\Editor\Data\MonoBleedingEdge\lib\mono\4.5\mscorlib.dll"

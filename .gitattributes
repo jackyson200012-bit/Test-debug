@@ -1,0 +1,2 @@
+Assets/StreamingAssets/LlamaLib-v2.0.5/**/*.dll filter=lfs diff=lfs merge=lfs -text
+Assets/StreamingAssets/LlamaLib-v2.0.5/**/*.so filter=lfs diff=lfs merge=lfs -text

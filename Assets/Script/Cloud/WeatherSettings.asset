@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7aa82536bacb4ee1bd6468001f252d73, type: 3}
+  m_Name: WeatherSettings
+  m_EditorClassIdentifier: Assembly-CSharp::JayFos.Cloud.WeatherSettings
+  transitionDuration: 10
+  clearCloudCoverage: 0.15
+  clearFogDensity: 0
+  clearAmbientIntensity: 1
+  cloudyCloudCoverage: 0.65
+  cloudyFogDensity: 0.002
+  cloudyAmbientIntensity: 0.85
+  rainCloudCoverage: 0.8
+  rainFogDensity: 0.005
+  rainAmbientIntensity: 0.65
+  rainIntensity: 0.7
+  rainSpeed: 15
+  stormCloudCoverage: 0.95
+  stormFogDensity: 0.01
+  stormAmbientIntensity: 0.4
+  stormRainIntensity: 1
+  stormRainSpeed: 25
+  stormWindMultiplier: 2
+  fogCloudCoverage: 0.3
+  fogFogDensity: 0.03
+  fogAmbientIntensity: 0.7
