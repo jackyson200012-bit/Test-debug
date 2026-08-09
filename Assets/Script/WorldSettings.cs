@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using JayFos.Biomes;
 using JayFos.Foliage;
 using JayFos.Cloud;
+using JayFos.Roads;
 
 namespace JayFos.World
 {
@@ -116,6 +117,10 @@ namespace JayFos.World
         public CloudSettings cloudSettings;
         public WeatherSettings weatherSettings;
         public bool enableClouds = true;
+
+        [Header("Roads")]
+        public bool enableRoads = false;
+        public RoadSettings roadSettings;
 
         [Header("Foliage Spawn Rules")]
 
