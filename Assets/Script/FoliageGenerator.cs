@@ -3,6 +3,7 @@ using UnityEngine;
 using JayFos.Biomes;
 using JayFos.Terrain;
 using JayFos.World;
+using JayFos.Roads;
 
 namespace JayFos.Foliage
 {
@@ -65,17 +66,17 @@ namespace JayFos.Foliage
 
         public void ResetStats() => stats.Reset();
 
-        public List<PlacementPoint> Generate(Vector2Int chunkCoord, HeightMap heightMap)
+        public List<PlacementPoint> Generate(Vector2Int chunkCoord, HeightMap heightMap, RoadFieldGrid roadGrid = null)
         {
-            return GenerateInternal(chunkCoord, heightMap, null);
+            return GenerateInternal(chunkCoord, heightMap, null, roadGrid);
         }
 
-        public List<PlacementPoint> Generate(Vector2Int chunkCoord, HeightMap heightMap, List<PlacementPoint> output)
+        public List<PlacementPoint> Generate(Vector2Int chunkCoord, HeightMap heightMap, List<PlacementPoint> output, RoadFieldGrid roadGrid = null)
         {
-            return GenerateInternal(chunkCoord, heightMap, output);
+            return GenerateInternal(chunkCoord, heightMap, output, roadGrid);
         }
 
-        private List<PlacementPoint> GenerateInternal(Vector2Int chunkCoord, HeightMap heightMap, List<PlacementPoint> output)
+        private List<PlacementPoint> GenerateInternal(Vector2Int chunkCoord, HeightMap heightMap, List<PlacementPoint> output, RoadFieldGrid roadGrid)
         {
             stats.Reset();
 
@@ -167,6 +168,16 @@ namespace JayFos.Foliage
                     {
                         stats.rejectedNoiseThreshold++;
                         continue;
+                    }
+
+                    if (roadGrid != null && settings.enableRoads && settings.roadSettings != null)
+                    {
+                        float roadInfluence = roadGrid.Sample(worldX, worldZ);
+                        if (roadInfluence > settings.roadSettings.roadThreshold)
+                        {
+                            stats.rejectedNoiseThreshold++;
+                            continue;
+                        }
                     }
 
                     float slopeDegrees = hAndSlope.slopeDegrees;
