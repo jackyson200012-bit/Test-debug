@@ -234,7 +234,7 @@ namespace JayFos.Terrain
                         chunkBiome = biomeMap.GetBiomeAtChunkCenter(coord.x, coord.y, settings.chunkSize);
                     }
 
-                    Mesh mesh = MeshGenerator.Generate(heightMap, settings, chunkBiome, roadGrid);
+                    Mesh mesh = MeshGenerator.Generate(heightMap, settings, chunkBiome, roadGrid, coord);
                     AssignMesh(mesh);
 
                     if (meshRenderer != null)

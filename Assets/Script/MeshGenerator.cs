@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using JayFos.Roads;
 
 namespace JayFos.Terrain
 {
@@ -35,7 +36,7 @@ namespace JayFos.Terrain
             _triangleCount = 0;
         }
 
-        public static Mesh Generate(HeightMap heightMap, JayFos.World.WorldSettings settings, JayFos.Biomes.BiomeDefinition biome = null)
+        public static Mesh Generate(HeightMap heightMap, JayFos.World.WorldSettings settings, JayFos.Biomes.BiomeDefinition biome = null, RoadFieldGrid roadGrid = null, Vector2Int chunkCoord = default)
         {
             int vertsPerLine = settings.verticesPerLine;
             int chunkSize = settings.chunkSize;
@@ -46,6 +47,9 @@ namespace JayFos.Terrain
             ResetTriangleCount();
 
             float vertexSpacing = (float)chunkSize / (vertsPerLine - 1);
+            bool hasRoads = roadGrid != null && settings.enableRoads && settings.roadSettings != null;
+            Color roadColor = hasRoads ? settings.roadSettings.roadColor : Color.clear;
+            float roadHeightOffset = hasRoads ? settings.roadSettings.roadHeightOffset : 0f;
 
             int vertexIndex = 0;
 
@@ -54,10 +58,28 @@ namespace JayFos.Terrain
                 for (int x = 0; x < vertsPerLine; x++)
                 {
                     float height = heightMap.heights[x, z];
+                    float finalHeight = height;
+                    Color vertexColor = biome != null ? biome.color : Color.white;
+
+                    if (hasRoads)
+                    {
+                        float worldX = chunkCoord.x * chunkSize + x * vertexSpacing;
+                        float worldZ = chunkCoord.y * chunkSize + z * vertexSpacing;
+
+                        float roadInfluence = roadGrid.Sample(worldX, worldZ);
+
+                        if (roadInfluence > 0.01f)
+                        {
+                            float terrainBlend = 1f - roadInfluence;
+                            float roadHeight = height + roadHeightOffset;
+                            finalHeight = Mathf.Lerp(roadHeight, height, terrainBlend);
+                            vertexColor = Color.Lerp(roadColor, vertexColor, terrainBlend);
+                        }
+                    }
 
                     vertices[vertexIndex] = new Vector3(
                         x * vertexSpacing,
-                        height,
+                        finalHeight,
                         z * vertexSpacing
                     );
 
@@ -106,15 +128,42 @@ namespace JayFos.Terrain
             mesh.SetTriangles(_triangleBuffer, 0, _triangleCount, 0);
             mesh.SetUVs(0, uvs);
 
-            if (biome != null)
+            Color[] vertexColors = null;
+            if (hasRoads)
+            {
+                vertexColors = new Color[vertsPerLine * vertsPerLine];
+                for (int i = 0; i < vertexColors.Length; i++)
+                {
+                    float worldX = chunkCoord.x * chunkSize + (i % vertsPerLine) * vertexSpacing;
+                    float worldZ = chunkCoord.y * chunkSize + (i / vertsPerLine) * vertexSpacing;
+
+                    Color baseColor = biome != null ? biome.color : Color.white;
+                    float roadInfluence = roadGrid.Sample(worldX, worldZ);
+
+                    if (roadInfluence > 0.01f)
+                    {
+                        float terrainBlend = 1f - roadInfluence;
+                        vertexColors[i] = Color.Lerp(roadColor, baseColor, terrainBlend);
+                    }
+                    else
+                    {
+                        vertexColors[i] = baseColor;
+                    }
+                }
+            }
+            else if (biome != null)
             {
                 int vertexCount = vertsPerLine * vertsPerLine;
-                Color[] vertexColors = new Color[vertexCount];
+                vertexColors = new Color[vertexCount];
                 Color biomeColor = biome.color;
                 for (int i = 0; i < vertexCount; i++)
                 {
                     vertexColors[i] = biomeColor;
                 }
+            }
+
+            if (vertexColors != null)
+            {
                 mesh.SetColors(vertexColors);
             }
 
