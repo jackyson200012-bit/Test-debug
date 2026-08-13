@@ -4,6 +4,7 @@ Shader "JayFos/Clouds/ProceduralCloud"
     {
         _CloudColor("Cloud Color", Color) = (0.95, 0.97, 1, 1)
         _CloudShadowColor("Shadow Color", Color) = (0.6, 0.65, 0.75, 1)
+        _ShadowIntensity("Cloud Shadow Multiplier", Range(0, 1)) = 0
         _Opacity("Opacity", Range(0, 1)) = 0.85
         _SoftEdge("Soft Edge", Range(0, 1)) = 0.5
         _NoiseScale("Noise Scale", Range(0.01, 1)) = 0.3
@@ -39,6 +40,7 @@ Shader "JayFos/Clouds/ProceduralCloud"
             CBUFFER_START(UnityPerMaterial)
                 float4 _CloudColor;
                 float4 _CloudShadowColor;
+                float _ShadowIntensity;
                 float _Opacity;
                 float _SoftEdge;
                 float _NoiseScale;
@@ -114,6 +116,7 @@ Shader "JayFos/Clouds/ProceduralCloud"
                 float3 lightDir = normalize(_MainLightPosition.xyz);
                 float ndotl = dot(float3(0, 1, 0), lightDir) * 0.5 + 0.5;
                 float3 cloudLit = lerp(_CloudShadowColor.rgb, _CloudColor.rgb, ndotl);
+                cloudLit *= (1.0 - _ShadowIntensity);
 
                 return half4(cloudLit, alpha);
             }

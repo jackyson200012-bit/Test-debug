@@ -129,6 +129,9 @@ GameObject:
   m_Component:
   - component: {fileID: 248957904}
   - component: {fileID: 248957903}
+  - component: {fileID: 248957907}
+  - component: {fileID: 248957906}
+  - component: {fileID: 248957905}
   m_Layer: 0
   m_Name: WorldManager
   m_TagString: Untagged
@@ -151,21 +154,80 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: b31de9d0b8c11494f8e84efcfe418ba1, type: 2}
   player: {fileID: 1433059771}
   updateInterval: 0.2
---- !u!4 &248957904
-Transform:
+--- !u!224 &248957904
+RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 248957902}
-  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.43162, y: 2.66293, z: -9.92259}
+  m_LocalPosition: {x: 0, y: 0, z: -9.92259}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 6.43162, y: 2.66293}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &248957905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 248957902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 956047d2ef4a8bc4ca111ee168025049, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JayFos.Environment.Phase28IntegrationTest
+  fastForward: 1
+--- !u!114 &248957906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 248957902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Text
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_FontSize: 14
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 10
+    m_MaxSize: 40
+    m_Alignment: 0
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
+    m_LineSpacing: 1
+  m_Text: 
+--- !u!222 &248957907
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 248957902}
+  m_CullTransparentMesh: 1
 --- !u!1 &325114130
 GameObject:
   m_ObjectHideFlags: 0
@@ -1390,8 +1452,24 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3528919281400005366, guid: 7707ae37e66a41a42b21dec25d8baf38, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 32
+      objectReference: {fileID: 0}
+    - target: {fileID: 3528919281400005366, guid: 7707ae37e66a41a42b21dec25d8baf38, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 15.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3528919281400005366, guid: 7707ae37e66a41a42b21dec25d8baf38, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 56.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 3528919281400005366, guid: 7707ae37e66a41a42b21dec25d8baf38, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.976296
+      objectReference: {fileID: 0}
+    - target: {fileID: 3528919281400005366, guid: 7707ae37e66a41a42b21dec25d8baf38, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.21643962
       objectReference: {fileID: 0}
     - target: {fileID: 3581110790335892996, guid: 7707ae37e66a41a42b21dec25d8baf38, type: 3}
       propertyPath: m_Name
@@ -1712,6 +1790,10 @@ PrefabInstance:
     - target: {fileID: 6703932011519648737, guid: 7707ae37e66a41a42b21dec25d8baf38, type: 3}
       propertyPath: crouchEyeHeight
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6703932011519648737, guid: 7707ae37e66a41a42b21dec25d8baf38, type: 3}
+      propertyPath: rotateInstantly
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6703932011519648737, guid: 7707ae37e66a41a42b21dec25d8baf38, type: 3}
       propertyPath: standingEyeHeight

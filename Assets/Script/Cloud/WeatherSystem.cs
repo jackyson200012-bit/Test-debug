@@ -1,5 +1,6 @@
 using UnityEngine;
 using JayFos.Biomes;
+using JayFos.Environment;
 
 namespace JayFos.Cloud
 {
@@ -18,17 +19,41 @@ namespace JayFos.Cloud
         private float currentFogDensity;
         private float currentAmbientIntensity;
         private float currentRainIntensity;
+        private float currentSnowIntensity;
         private float currentWindMultiplier;
+        private float currentTemperature;
+        private float currentDaylightFactor = 1f;
 
         private CloudManager cloudManager;
         private BiomeMap biomeMap;
         private Light mainLight;
+        private SnowSystem snowSystem;
+
+        // Phase 2.8 references (optional; null-safe when not assigned)
+        public EnvironmentSettings environmentSettings;
+        public DayNightCycle dayNightCycle;
 
         public WeatherState CurrentState => currentState;
         public float CurrentCoverage => currentCoverage;
         public float CurrentFogDensity => currentFogDensity;
         public float CurrentRainIntensity => currentRainIntensity;
+        public float CurrentSnowIntensity => currentSnowIntensity;
         public float CurrentWindMultiplier => currentWindMultiplier;
+
+        /// <summary>
+        /// Normalized 0-1 wind force derived from the wind multiplier.
+        /// 0 = calm (multiplier 1x), 1 = max wind (storm multiplier).
+        /// </summary>
+        public float CurrentWindForce
+        {
+            get
+            {
+                float maxMultiplier = weatherSettings != null ? weatherSettings.stormWindMultiplier : 2f;
+                return Mathf.InverseLerp(1f, Mathf.Max(maxMultiplier, 1.001f), currentWindMultiplier);
+            }
+        }
+        public float CurrentTemperature => currentTemperature;
+        public float CurrentDaylightFactor => currentDaylightFactor;
 
         public void Initialize(CloudManager cloudManager, BiomeMap biomeMap, WeatherSettings weatherSettings)
         {
@@ -163,11 +188,100 @@ namespace JayFos.Cloud
             if (cloudManager != null)
                 cloudManager.SetCoverage(currentCoverage);
 
-            RenderSettings.fogDensity = currentFogDensity;
-            RenderSettings.fog = currentFogDensity > 0.001f;
+            // Phase 2.8: daylight factor from DayNightCycle (1.0 when not assigned -> preserves Phase 2.6 behavior)
+            currentDaylightFactor = dayNightCycle != null ? dayNightCycle.DaylightFactor : 1f;
+
+            // Phase 2.8: compute effective temperature (global curve -> biome override)
+            float globalTemp = 0.5f;
+            if (environmentSettings != null && dayNightCycle != null)
+            {
+                globalTemp = environmentSettings.temperatureCurve.Evaluate(dayNightCycle.DayProgress);
+            }
+
+            float effectiveTemp = globalTemp;
+            if (biomeMap != null && Camera.main != null)
+            {
+                Vector3 camPos = Camera.main.transform.position;
+                BiomeDefinition biome = biomeMap.GetBiome(camPos.x, camPos.z);
+                if (biome != null)
+                {
+                    effectiveTemp = biome.temperature;
+                }
+            }
+
+            currentTemperature = effectiveTemp;
+
+            // Snow toggle: effective temp below threshold AND enabled
+            bool shouldSnow = effectiveTemp < (environmentSettings != null ? environmentSettings.snowThreshold : 0.5f)
+                && (environmentSettings != null && environmentSettings.enableSnow);
+
+            if (snowSystem != null)
+            {
+                snowSystem.enabled = shouldSnow;
+            }
+
+            // Rain disabled during snow to prevent mixed precipitation artifacts.
+            // When snow ends, restore the state-derived rain so suppression isn't permanent.
+            if (shouldSnow)
+            {
+                currentRainIntensity = 0f;
+            }
+            else if (weatherSettings != null && transitionProgress >= 1f)
+            {
+                currentRainIntensity = weatherSettings.GetRainIntensity(targetState);
+            }
+
+            // Snow intensity: kept distinct from rain so SnowSystem can emit while rain is suppressed.
+            // Proportional to the precip target of the current weather state.
+            if (weatherSettings != null)
+            {
+                currentSnowIntensity = shouldSnow ? weatherSettings.GetRainIntensity(targetState) : 0f;
+            }
+
+            ApplyFog();
 
             if (mainLight != null)
-                mainLight.intensity = currentAmbientIntensity;
+                mainLight.intensity = currentAmbientIntensity * currentDaylightFactor;
+        }
+
+        // Phase 2.8: Atmospheric Depth — fog mode, weather-driven density, and time-of-day haze color.
+        // Falls back to the Phase 2.6 behavior when enableAtmosphericDepth is disabled.
+        private void ApplyFog()
+        {
+            if (environmentSettings != null && environmentSettings.enableAtmosphericDepth)
+            {
+                RenderSettings.fog = true;
+                RenderSettings.fogMode = FogMode.ExponentialSquared;
+
+                // currentFogDensity is an absolute density (0..fogFogDensity). Normalize it
+                // so Clear weather maps to fogDensityBase and Fog/Storm to fogDensityMax.
+                float maxFog = weatherSettings != null ? weatherSettings.fogFogDensity : 0.03f;
+                float t = Mathf.InverseLerp(0f, maxFog, currentFogDensity);
+                RenderSettings.fogDensity = Mathf.Lerp(environmentSettings.fogDensityBase, environmentSettings.fogDensityMax, t);
+                RenderSettings.fogColor = ComputeHazeColor(currentDaylightFactor);
+            }
+            else
+            {
+                // Phase 2.6 behavior (preserved): direct weather density, simple on/off toggle
+                RenderSettings.fogDensity = currentFogDensity;
+                RenderSettings.fog = currentFogDensity > 0.001f;
+            }
+        }
+
+        private Color ComputeHazeColor(float daylightFactor)
+        {
+            Color hazeColor;
+            if (daylightFactor > 0.5f)
+            {
+                // During day: neutral, slightly warm haze
+                hazeColor = Color.Lerp(new Color(0.8f, 0.85f, 0.9f), new Color(0.9f, 0.92f, 0.88f), (daylightFactor - 0.5f) * 2f);
+            }
+            else
+            {
+                // During night/sunset: cool blue or warm orange haze
+                hazeColor = Color.Lerp(new Color(0.1f, 0.12f, 0.2f), new Color(0.6f, 0.3f, 0.15f), daylightFactor * 2f);
+            }
+            return hazeColor;
         }
 
         private void ApplyStateInstant(WeatherState state)
@@ -196,6 +310,20 @@ namespace JayFos.Cloud
             }
 
             return best;
+        }
+
+        /// <summary>
+        /// Allows WorldManager to pin the exact Light shared with DayNightCycle,
+        /// so rotation (DayNightCycle) and intensity (WeatherSystem) act on the same light.
+        /// </summary>
+        public void SetMainLight(Light light)
+        {
+            mainLight = light;
+        }
+
+        public void SetSnowSystem(SnowSystem snowSystem)
+        {
+            this.snowSystem = snowSystem;
         }
     }
 }

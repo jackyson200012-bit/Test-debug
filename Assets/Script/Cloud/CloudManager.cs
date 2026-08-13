@@ -75,6 +75,10 @@ namespace JayFos.Cloud
             settings.cloudCoverage = coverage;
         }
 
+        public float CurrentCoverage => settings.cloudCoverage;
+
+        public CloudRenderer Renderer => renderer;
+
         private Vector2Int GetCameraCell()
         {
             Vector3 pos = cameraTransform.position;

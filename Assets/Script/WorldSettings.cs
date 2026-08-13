@@ -4,6 +4,7 @@ using JayFos.Biomes;
 using JayFos.Foliage;
 using JayFos.Cloud;
 using JayFos.Roads;
+using JayFos.Environment;
 
 namespace JayFos.World
 {
@@ -117,6 +118,9 @@ namespace JayFos.World
         public CloudSettings cloudSettings;
         public WeatherSettings weatherSettings;
         public bool enableClouds = true;
+
+        [Header("Environment (Phase 2.8)")]
+        public EnvironmentSettings environmentSettings;
 
         [Header("Roads")]
         public bool enableRoads = false;

@@ -49,5 +49,6 @@ MonoBehaviour:
   waterFoamDistance: 2.5
   cloudSettings: {fileID: 11400000, guid: ffbd11c9b25843a4a8cf1ad5087ed8db, type: 2}
   weatherSettings: {fileID: 11400000, guid: 0743136ab3ab8164eb5b85e3bbafdc74, type: 2}
+  environmentSettings: {fileID: 11400000, guid: e17e8453f9c213944905bd06c612535e, type: 2}
   enableClouds: 1
   spawnRules: []

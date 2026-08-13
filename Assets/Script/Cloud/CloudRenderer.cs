@@ -13,6 +13,10 @@ namespace JayFos.Cloud
 
         private const int INITIAL_POOL = 128;
 
+        // Cached MaterialPropertyBlock for cloud shadow darkening (zero per-frame allocation).
+        private MaterialPropertyBlock shadowBlock;
+        private int shadowIntensityId;
+
         private struct CloudObject
         {
             public GameObject go;
@@ -23,10 +27,28 @@ namespace JayFos.Cloud
         {
             cloudMaterial = material;
             cloudMesh = mesh;
+            shadowBlock = new MaterialPropertyBlock();
+            shadowIntensityId = Shader.PropertyToID("_ShadowIntensity");
 
             for (int i = 0; i < INITIAL_POOL; i++)
             {
                 pool.Add(CreateCloudObject());
+            }
+        }
+
+        /// <summary>
+        /// Applies a uniform cloud-coverage shadow multiplier to every active cloud renderer
+        /// via a single cached MaterialPropertyBlock. Does NOT instantiate materials.
+        /// </summary>
+        public void SetCloudShadow(float intensity)
+        {
+            if (shadowBlock == null || activeCount == 0)
+                return;
+
+            shadowBlock.SetFloat(shadowIntensityId, intensity);
+            for (int i = 0; i < activeCount; i++)
+            {
+                pool[i].renderer.SetPropertyBlock(shadowBlock);
             }
         }
 

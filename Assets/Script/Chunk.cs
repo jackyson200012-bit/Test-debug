@@ -395,6 +395,8 @@ namespace JayFos.Terrain
 
                 ApplyFoliageMaterial(foliageGO, rules, point.FoliageType);
 
+                RegisterFoliageRenderers(foliageGO);
+
                 activeFoliage.Add(new FoliageEntry(foliageGO, isPooled));
             }
         }
@@ -421,6 +423,32 @@ namespace JayFos.Terrain
             MeshRenderer prefabRenderer = prefab.GetComponent<MeshRenderer>();
             if (prefabRenderer != null)
                 renderer.sharedMaterial = prefabRenderer.sharedMaterial;
+        }
+
+        private static void RegisterFoliageRenderers(GameObject foliageGO)
+        {
+            if (foliageGO == null)
+                return;
+
+            MeshRenderer[] renderers = foliageGO.GetComponentsInChildren<MeshRenderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i] != null)
+                    JayFos.Foliage.FoliageRendererRegistry.Add(renderers[i]);
+            }
+        }
+
+        private static void UnregisterFoliageRenderers(GameObject foliageGO)
+        {
+            if (foliageGO == null)
+                return;
+
+            MeshRenderer[] renderers = foliageGO.GetComponentsInChildren<MeshRenderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i] != null)
+                    JayFos.Foliage.FoliageRendererRegistry.Remove(renderers[i]);
+            }
         }
 
         private GameObject GetOrCreateFoliageInstance(
@@ -469,6 +497,8 @@ namespace JayFos.Terrain
 
                 if (entry.Instance == null)
                     continue;
+
+                UnregisterFoliageRenderers(entry.Instance);
 
                 if (entry.IsPooled && pool != null)
                 {

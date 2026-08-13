@@ -58,6 +58,8 @@ Shader "JayFos/Water/URPWater"
                 float _FoamNoiseScale;
             CBUFFER_END
 
+            float _CloudShadowIntensity;
+
             TEXTURE2D(_BaseMap);
             SAMPLER(sampler_BaseMap);
 
@@ -137,6 +139,9 @@ Shader "JayFos/Water/URPWater"
                 float3 V = normalize(_WorldSpaceCameraPos.xyz - i.positionWS);
                 float spec = saturate(dot(reflect(-_MainLightPosition.xyz, N), V));
                 foamed += spec * _ShallowColor.rgb * 0.25;
+
+                // Uniform cloud-coverage darkening (global value, not spatial projection).
+                foamed *= (1.0 - _CloudShadowIntensity * 0.6);
 
                 return half4(foamed, _BaseColor.a);
             }
